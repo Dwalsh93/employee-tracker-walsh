@@ -1,0 +1,24 @@
+{
+  "name": "employee-tracker-walsh",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dwalsh93/employee-tracker-walsh.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Dwalsh93/employee-tracker-walsh/issues"
+  },
+  "homepage": "https://github.com/Dwalsh93/employee-tracker-walsh#readme",
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "inquirer": "^8.1.1",
+    "mysql2": "^2.2.5"
+  }
+}
