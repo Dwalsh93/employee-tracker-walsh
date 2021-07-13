@@ -49,8 +49,6 @@ function startPrompt() {
 };
 
 function viewAllDepartments() {
-  //we need sql syntax
-  //sql queries
   const sql = `SELECT * FROM department`;
   db.query(sql, (err, res) => {
     if (err) {
@@ -60,33 +58,54 @@ function viewAllDepartments() {
     const table = cTable.getTable(res) 
     console.log(table)
   });
-  // console.table
-  // sales 
-  // engineers
-  // marketing
+
 };
 
 function viewAllRoles() {
-  // console.table
-  // Social Media Manager
-  // Engineer
-  // Cashier
+  const sql = `SELECT * FROM roles`;
+  db.query(sql, (err, res) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    const table = cTable.getTable(res) 
+    console.log(table)
+  });
 };
 
 function viewAllEmployees() {
-  // console.table 
-  // John Snow
-  // Sam Tulley
-  // Sansa Stark
-  // Theon Greyjoy
-  // Arya Stark
-  // The Hound 
+  const sql = `SELECT * FROM employee`;
+  db.query(sql, (err, res) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    const table = cTable.getTable(res) 
+    console.log(table)
+  });
 };
 
 function addNewDepartment() {
-  // capture value 
-  // inquire: "what department are you adding?"  
-};
+  inquirer.prompt([
+    {
+      type: "input",
+      name: "departmentName",
+      message: "What department will you create?"
+    }
+  ]).then(function (userResponse, err) {
+    dbConnect.query(
+      "INSERT INTO department SET ?",
+      {
+      name: answer.addNewDepartment,
+      },
+      function (err) {
+        if (err) throw err;
+        console.log("Department Created");
+        startPrompt();
+      }
+    );
+  }); 
+}
 
 function addNewRoles() {
   // inquire: "What department is the role connected to? multiple choice: 1 - Marketing, 2 - Eng, 3 - Sales"
