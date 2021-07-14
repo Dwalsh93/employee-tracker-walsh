@@ -55,7 +55,7 @@ function viewAllDepartments() {
       res.status(500).json({ error: err.message });
       return;
     }
-    const table = cTable.getTable(res) 
+    const table = cTable.getTable(res)
     console.log(table)
   });
 
@@ -68,7 +68,7 @@ function viewAllRoles() {
       res.status(500).json({ error: err.message });
       return;
     }
-    const table = cTable.getTable(res) 
+    const table = cTable.getTable(res)
     console.log(table)
   });
 };
@@ -80,7 +80,7 @@ function viewAllEmployees() {
       res.status(500).json({ error: err.message });
       return;
     }
-    const table = cTable.getTable(res) 
+    const table = cTable.getTable(res)
     console.log(table)
   });
 };
@@ -96,7 +96,7 @@ function addNewDepartment() {
     dbConnect.query(
       "INSERT INTO department SET ?",
       {
-      name: answer.addNewDepartment,
+        name: answer.addNewDepartment,
       },
       function (err) {
         if (err) throw err;
@@ -104,33 +104,65 @@ function addNewDepartment() {
         startPrompt();
       }
     );
-  }); 
+  });
 }
 
 function addNewRoles() {
-  // inquire: "What department is the role connected to? multiple choice: 1 - Marketing, 2 - Eng, 3 - Sales"
-  //on the BACK end, the actual VALUE connected to the multiple choice should be the dept_id
-  //so if theuser chooses Marketing, what they've selected in the back end is 1
-  //inquirer for the choices you can have the "name" (which is what the user sees) but you can also assign it a value (back end)
-  // message: "Please choose which department the role belongs to.",
-  // choices: [
-  //   { name: "Student", value: 7 },
-  //   { name: "Professor", value: 8 },
-  //   { name: "Chaos", value: 9 },
-  //   { name: "Ghosts", value: 10 },
-  //   { name: "House Elves", value: 11 }
+  dbConnect.query("SELECT * FROM department", (err, res) => {
+    if (err) throw err;
+    inquierer.prompt([
+      {
+        type: "input",
+        message: "What Role will you create?",
+        name: "newRole"
+      },
+      {
+        type: "input",
+        message: "Please enter the salary for this role",
+        name: "salary"
+      },
+      {
+        type: "parentList",
+        message: "What department will this role be added to?",
+        choices: function () {
+          let choicesArray = [];
+          res.forEach(res => { choicesArray.push(res.name) });
+          return choicesArray;
+        },
+        name: "department"
+      }
+    ]).then(function (userResponse, err) {
+      const dept = answer.department;
+      dbConnect.query('SELECT * FROM department', (err, res) => {
 
-  // "what new role would you like to add?"
-  // "what is the salary for this role"
-};
+        if (err) throw (err);
+        let filteredDept = res.filter(res => {
+          return res.name == dept;
+        });
 
-function addNewEmployee() {
-  // inquire: "New Employee Name"
-  // "What role does this employee play?"
-  // "What is this employee's salary?"
-  // use addnewroles as a reference.
-};
+        let id = filteredDept[0].id;
+        dbConnect.query("INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
+          [
+            answer.newRole,
+            parseInt(answer.salary),
+            id
+          ],
+          function (err) {
+            if (err) throw err;
+            console.log('(`${(answer.newRole).toUpperCase()} has been added successfully.')
+          })
+        viewAllRoles();
+      });
+    });
+  });
 
-function updateEmployeeRole() {
-  // see addnewroles as reference 
-};
+    function addNewEmployee() {
+      // inquire: "New Employee Name"
+      // "What role does this employee play?"
+      // "What is this employee's salary?"
+      // use addnewroles as a reference.
+    };
+
+    function updateEmployeeRole() {
+      // see addnewroles as reference 
+    };
