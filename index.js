@@ -2,15 +2,7 @@ const db = require('./db/connection.js');
 console.log('hello');
 const inquirer = require("inquirer");
 const cTable = require('console.table');
-
-// Start server after DB connection
-db.connect(err => {
-  if (err) throw err;
-  console.log('Database connected.');
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-});
+var PORT = 3001
 
 function startPrompt() {
   inquirer.prompt([
@@ -56,7 +48,6 @@ function viewAllDepartments() {
       return;
     }
     const table = cTable.getTable(res)
-    console.log(table)
   });
 
 };
@@ -101,7 +92,6 @@ function addNewDepartment() {
       function (err) {
         if (err) throw err;
         console.log("Department Created");
-        startPrompt();
       }
     );
   });
@@ -156,13 +146,119 @@ function addNewRoles() {
     });
   });
 
-    function addNewEmployee() {
-      // inquire: "New Employee Name"
-      // "What role does this employee play?"
-      // "What is this employee's salary?"
-      // use addnewroles as a reference.
-    };
 
-    function updateEmployeeRole() {
-      // see addnewroles as reference 
-    };
+  function addEmployee() {
+    dbConnect.query("SELECT * FROM role", (err, res) => {
+      if (err) throw err;
+      inquirer.prompt([
+        {
+          type: "input",
+          message: "What is the employee's first name?",
+          name: "first_name",
+        },
+        {
+          type: "input",
+          message: "What is the employee's last name?",
+          name: "last_name"
+        },
+        {
+          type: "rawList",
+          message: "Which Role does the employee belong to?",
+          choices: function () {
+            let choicesArray = [];
+            res.forEach(res => {
+              choicesArray.push(res.title);
+            });
+            return choicesArray;
+          },
+          name: "role"
+        }
+      ]).then(function (answer) {
+        const role = answer.role;
+        dbConnect.query('SELECT * FROM role', (err, res) => {
+
+          if (err) throw (err);
+          let filteredRole = res.filter(res => {
+            return res.title == role;
+          });
+
+          let id = filteredRole[0].id;
+          dbConnect.query("INSERT INTO employee (first_name, last_name, role_id) VALUES (?, ?, ?)",
+            [
+              answer.first_name,
+              answer.last_name,
+              id
+            ],
+            function (err) {
+              if (err) throw err;
+              console.log(`You have added this employee: ${(answer.first_name)} ${(answer.last_name)} successfully.`)
+            });
+          viewEmployees();
+        });
+      });
+    });
+  }
+
+  function updateEmployee() {
+    dbConnect.query("SELECT * FROM employee", (err, res) => {
+      if (err) throw err;
+      inquirer.prompt([
+        {
+          type: "rawList",
+          message: "Which employee would you like to update? Please enter their last name.",
+          choices: function () {
+            chosenEmployee = [];
+            res.forEach(res => {
+              chosenEmployee.push(res.last_name);
+            });
+            return chosenEmployee;
+          },
+          name: "employee"
+        }
+      ]).then(function (answer) {
+        const changeEmployee = answer.employee;
+
+        console.log("Employee Chosen: " + changeEmployee);
+
+        dbConnect.query("SELECT * FROM role", (err, res) => {
+          if (err) throw err;
+          inquirer.prompt([
+            {
+              type: "rawList",
+              message: "What is this employees new role?",
+              choices: function () {
+                newRole = [];
+                res.forEach(res => {
+                  newRole.push(res.title);
+                  //push new role into the role title db
+                });
+                return newRole;
+              },
+              name: "newRole"
+            }
+          ]).then(function (update) {
+            const updatedRole = update.newRole;
+            console.log("Updated Role: " + updatedRole);
+
+            dbConnect.query('SELECT * FROM role WHERE title = ?', [updatedRole], (err, res) => {
+              if (err) throw (err);
+
+              let roleID = res[0].id;
+              console.log("ROLE id : " + roleID);
+
+              let params = [roleID, changeEmployee];
+
+              dbConnect.query("UPDATE employee SET role_id = ? WHERE last_name = ?", params,
+                (err, res) => {
+                  if (err) throw (err);
+                  console.log(`You have updated ${changeEmployee}'s role to ${updatedRole}.`)
+                });
+              viewEmployees();
+            });
+          });
+        });
+      });
+    });
+  };
+};
+startPrompt();
